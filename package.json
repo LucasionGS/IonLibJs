@@ -1,0 +1,8 @@
+{
+  "name": "ionlib",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ion.js",
+  "author": "Lucasion",
+  "license": "ISC"
+}
