@@ -13,7 +13,7 @@ class ContextMenu
    * @param {[{"name":string, "click": (ev: MouseEvent, ref: HTMLElement) => void, runOnThis: (actionBtn: HTMLDivElement) => void}]} actions 
    */
   constructor(actions) {
-    this.action = actions;
+    this.actions = actions;
     const menu = document.createElement("div");
     this.menu = menu;
     menu.i = this;
@@ -90,6 +90,7 @@ class ContextMenu
       border-style: solid;
       border-width: 2px;
       border-color: white;
+      z-index: 10000;
     }
 
     div.ion_menuEntry{
