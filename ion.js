@@ -3,14 +3,50 @@
  */
 class ContextMenu
 {
+  static ActionsFormat = 
+  [
+    {
+      /**
+       * The display name of the action.
+       * @type {(ref: HTMLElement) => string}
+       */
+      "name": "",
+
+      /**
+       * The click event that will happen once the user clicks on the action.
+       * @type {(ev: MouseEvent, ref: HTMLElement, btnClicked: HTMLDivElement) => void}
+       */
+      "click": function(ev, ref, btnClicked) {},
+
+      /**
+       * Set to a function that will have the specific action button parsed as a parameter and you can run an event on it, like modifiying it, before it gets used.
+       * @type {(actionBtn: HTMLDivElement) => void}
+       */
+      "runOnThis": function(actionBtn) {},
+
+      /**
+       * The type of action button this is.
+       * @type {"click" | "checkbox"}
+       */
+      "type": "click",
+      
+      /**
+       * This is only valid if ``type`` is set to``checkbox``.
+       * Marks if the checkbox is checked or not by default.
+       * @type {boolean}
+       */
+      "checked": false
+    }
+  ];
+
   /**
-   * @type {[{"name": (ref: HTMLElement) => string, "click": (ev: MouseEvent, ref: HTMLElement) => void, runOnThis: (actionBtn: HTMLDivElement) => void}]}
+   * @type {ContextMenu.ActionsFormat}
    */
   actions = [];
 
   /**
    * Create a new custom context menu.
-   * @param {[{"name": (ref: HTMLElement) => string, "click": (ev: MouseEvent, ref: HTMLElement) => void, runOnThis: (actionBtn: HTMLDivElement) => void}]} actions The list of available actions. If ``click`` is missing, it will act as a non-clickable label.
+   * @param {ContextMenu.ActionsFormat} actions The list of available actions. If ``click`` is missing, it will act as a non-clickable label.
    */
   constructor(actions) {
     this.actions = actions;
@@ -34,7 +70,6 @@ class ContextMenu
     }
 
     menu.className = "ion_contextMenu";
-
 
     menu.addEventListener("mouseover", function(e) {
       menu.toggleAttribute("hovering", true);
@@ -99,14 +134,36 @@ class ContextMenu
       user-select: none;
     }
 
+    div.ion_menuEntry[checked]{
+      /* background-color: lightgreen; */
+    }
+
     div.ion_menuEntry:hover{
       background: #5b5b5b;
       cursor: pointer;
+    }
+
+    div.ion_menuEntry.ion_label{
+      text-align: center;
     }
     
     div.ion_menuEntry.ion_label:hover{
       background: #1b1b1b;
       cursor: not-allowed;
+    }
+
+    div.ion_menuEntry div.checkboxTick{
+      width: 18px;
+      height: 18px;
+      border-radius: 20px;
+      background-color: white;
+      opacity: 0.75;
+      float: right;
+    }
+
+    div.ion_menuEntry[checked] div.checkboxTick{
+      background-color: lightgreen;
+      opacity: 1;
     }
     `;
 
@@ -117,13 +174,27 @@ class ContextMenu
       const action = actions[i];
       const div = document.createElement("div");
       div.className = "ion_menuEntry";
-
-
       div.innerHTML = action.name;
+      
+      if (action.type && action.type == "checkbox") {
+        if (action.checked) {
+          div.toggleAttribute("checked", true);
+        }
+        const cBox = document.createElement("div");
+        cBox.className = "checkboxTick";
+  
+        div.appendChild(cBox);
+
+        div.title = "\""+action.name+"\" is "+div.hasAttribute("checked")+".";
+      }
 
       if (typeof action.click == "function") {
         div.onclick = function(e) {
-          action.click(e, inst.reference);
+          action.click(e, inst.reference, e.target);
+          if (action.type == "checkbox") {
+            div.toggleAttribute("checked");
+            div.title = "\""+action.name+"\" is "+div.hasAttribute("checked")+".";
+          }
           inst.hide();
         };
       }
@@ -131,8 +202,10 @@ class ContextMenu
         div.classList.add(["ion_label"]);
         div.style.borderBottomStyle = "solid";
         div.style.borderBottomWidth = "1px";
+        div.style.borderBottomColor = "#3b3b3b";
+
         div.style.borderTopStyle = "solid";
-        div.style.borderTopWidth = "2px";
+        div.style.borderTopWidth = "1px";
       }
 
       if (typeof action.runOnThis == "function") {
@@ -169,6 +242,10 @@ class ContextMenu
    */
   show(element) {
     this.menu.style.display = "block";
+    /**
+     * @type {this}
+     */
+    var inst = element.i;
     if (element) {
       this.reference = element;
     }
@@ -176,11 +253,22 @@ class ContextMenu
       this.reference = undefined;
     }
 
+    // for (let i = 0; i < inst.actions.length; i++) {
+    //   const action = inst.actions[i];
+    //   if (action.type) {
+    //     if (action.type == "checkbox") {
+    //       if (element.hasAttribute("checked")) {
+
+    //       }
+    //     }
+    //   }
+    // }
+
     // if (this.displayAt == "cursor") // Enable when other types are supported >_>
     {
       document.body.appendChild(this.menu);
-      this.menu.style.left = ContextMenu.cursorPos.x.toString()+"px";
-      this.menu.style.top = ContextMenu.cursorPos.y.toString()+"px";
+      this.menu.style.left = (ContextMenu.cursorPos.x-8).toString()+"px";
+      this.menu.style.top = (ContextMenu.cursorPos.y-8).toString()+"px";
     }
   }
   
@@ -219,7 +307,37 @@ class ContextMenu
 }
 
 /**
- * WIP  
+ * WORK IN PROGRESS  
+ * Extra JSON functions to modify and use JSON objects.
+ */
+class EJSON{
+  /**
+   * Sort a JSON Object alphabetically.
+   * @param {[{}]} json The JSON Object to sort.
+   * @param {string} sortValue The variable inside the JSON Object to sort by.
+   */
+  static sort(json, sortValue) {
+    json.sort((a, b) => {
+      a = a[sortValue].toLowerCase();
+      b = b[sortValue].toLowerCase();
+    
+      return (a < b) ? -1 : (a > b) ? 1 : 0;
+    });
+    return json;
+  }
+}
+
+class HTMLObjects
+{
+  static swapPlacement(element1, element2) {
+    var elm1Sib = element1.nextSibling;
+    element1.parentNode.insertBefore(element1, element2);
+    element2.parentNode.insertBefore(element2, elm1Sib);
+  }
+}
+
+/**
+ * WORK IN PROGRESS  
  * Item List
  */
 class ItemList
@@ -244,4 +362,6 @@ class ItemList
 // Exports
 try {
   exports.ContextMenu = ContextMenu;
+  exports.EJSON = EJSON;
+  exports.HTMLObjects = HTMLObjects;
 } catch {}
