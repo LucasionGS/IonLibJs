@@ -4,13 +4,13 @@
 class ContextMenu
 {
   /**
-   * @type {[{"name":string, "click": (ev: MouseEvent, ref: HTMLElement) => void, runOnThis: (actionBtn: HTMLDivElement) => void}]}
+   * @type {[{"name": (ref: HTMLElement) => string, "click": (ev: MouseEvent, ref: HTMLElement) => void, runOnThis: (actionBtn: HTMLDivElement) => void}]}
    */
   actions = [];
 
   /**
    * Create a new custom context menu.
-   * @param {[{"name":string, "click": (ev: MouseEvent, ref: HTMLElement) => void, runOnThis: (actionBtn: HTMLDivElement) => void}]} actions 
+   * @param {[{"name": (ref: HTMLElement) => string, "click": (ev: MouseEvent, ref: HTMLElement) => void, runOnThis: (actionBtn: HTMLDivElement) => void}]} actions The list of available actions. If ``click`` is missing, it will act as a non-clickable label.
    */
   constructor(actions) {
     this.actions = actions;
@@ -18,22 +18,23 @@ class ContextMenu
     this.menu = menu;
     menu.i = this;
 
-    if (!ContextMenu.hasEscFunction) {
+
+    if (!ContextMenu.initialized) {
       window.addEventListener("keydown", function(e) {
         if (e.key == "Escape") {
           menu.i.hide();
         }
       }, false);
+      window.addEventListener("mousemove", function(e) {
+        ContextMenu.cursorPos = {
+          x: e.clientX,
+          y: e.clientY
+        };
+      }, false);
     }
 
     menu.className = "ion_contextMenu";
 
-    window.addEventListener("mousemove", function(e) {
-      ContextMenu.cursorPos = {
-        x: e.clientX,
-        y: e.clientY
-      };
-    }, false);
 
     menu.addEventListener("mouseover", function(e) {
       menu.toggleAttribute("hovering", true);
@@ -102,6 +103,11 @@ class ContextMenu
       background: #5b5b5b;
       cursor: pointer;
     }
+    
+    div.ion_menuEntry.ion_label:hover{
+      background: #1b1b1b;
+      cursor: not-allowed;
+    }
     `;
 
     this.menu.appendChild(styling);
@@ -111,11 +117,23 @@ class ContextMenu
       const action = actions[i];
       const div = document.createElement("div");
       div.className = "ion_menuEntry";
+
+
       div.innerHTML = action.name;
-      div.onclick = function(e) {
-        action.click(e, inst.reference);
-        inst.hide();
-      };
+
+      if (typeof action.click == "function") {
+        div.onclick = function(e) {
+          action.click(e, inst.reference);
+          inst.hide();
+        };
+      }
+      else {
+        div.classList.add(["ion_label"]);
+        div.style.borderBottomStyle = "solid";
+        div.style.borderBottomWidth = "1px";
+        div.style.borderTopStyle = "solid";
+        div.style.borderTopWidth = "2px";
+      }
 
       if (typeof action.runOnThis == "function") {
         action.runOnThis(div);
@@ -126,9 +144,10 @@ class ContextMenu
   }
 
   /**
+   * This tells whether or not the first ContextMenu has been initialized or not.  
    * Do not modify this manually.
    */
-  static hasEscFunction = false;
+  static initialized = false;
 
   /**
    * Current position of the cursor.
@@ -156,6 +175,7 @@ class ContextMenu
     else {
       this.reference = undefined;
     }
+
     // if (this.displayAt == "cursor") // Enable when other types are supported >_>
     {
       document.body.appendChild(this.menu);
@@ -198,4 +218,30 @@ class ContextMenu
   }
 }
 
-exports.ContextMenu = ContextMenu;
+/**
+ * WIP  
+ * Item List
+ */
+class ItemList
+{
+  /**
+   * 
+   * @param {ItemList.ListFormat} items 
+   */
+  constructor(items) {
+  }
+
+  /**
+   * @type {[{"text": string}]}
+   */
+  static ListFormat = [
+    {
+      "text": ""
+    }
+  ];
+}
+
+// Exports
+try {
+  exports.ContextMenu = ContextMenu;
+} catch {}
