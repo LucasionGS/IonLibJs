@@ -359,9 +359,33 @@ class ItemList
   ];
 }
 
+class Path
+{
+  /**
+   * Returns the basename of a path.
+   * @param {string} path Path to a file/folder.
+   */
+  static basename(path){
+    path = path.replace(/\\/g, "/");
+    return path.split("/").pop();
+  }
+
+  /**
+   * Returns the basename of a path.
+   * @param {string} path Path to a file/folder.
+   */
+  static getPath(path) {
+    path = path.replace(/\\/g, "/");
+    var pathParts = path.split("/");
+    pathParts.pop();
+    return pathParts.join("/");
+  }
+}
+
 // Exports
 try {
   exports.ContextMenu = ContextMenu;
   exports.EJSON = EJSON;
   exports.HTMLObjects = HTMLObjects;
+  exports.Path = Path;
 } catch {}
