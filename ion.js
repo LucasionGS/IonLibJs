@@ -382,10 +382,33 @@ class Path
   }
 }
 
+class Web
+{
+  /**
+   * Get a parameter's value from a GET request.
+   * @param {string} param The parameter's name to get.
+   */
+  static getGETParameter(param) {
+    var result = null,
+        tmp = [];
+    location.search
+    .substr(1)
+    .split("&")
+    .forEach(function (item) {
+      tmp = item.split("=");
+      if (tmp[0] === param) {
+        result = decodeURIComponent(tmp[1]);
+      }
+    });
+    return result;
+  }
+}
+
 // Exports
 try {
   exports.ContextMenu = ContextMenu;
   exports.EJSON = EJSON;
   exports.HTMLObjects = HTMLObjects;
   exports.Path = Path;
+  exports.Web = Web;
 } catch {}
