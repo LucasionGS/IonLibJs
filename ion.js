@@ -80,7 +80,7 @@ class ContextMenu
     }, false);
 
     this.reloadActions(actions);
-    this.menu.style.opacity = 1;
+    menu.style.opacity = 1;
 
     setInterval(() => {
       if (!menu.hasAttribute("hovering")) {
@@ -266,6 +266,7 @@ class ContextMenu
 
     // if (this.displayAt == "cursor") // Enable when other types are supported >_>
     {
+      this.menu.style.opacity = 1;
       document.body.appendChild(this.menu);
       this.menu.style.left = (ContextMenu.cursorPos.x-8).toString()+"px";
       this.menu.style.top = (ContextMenu.cursorPos.y-8).toString()+"px";
