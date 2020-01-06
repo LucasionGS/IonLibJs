@@ -252,18 +252,6 @@ class ContextMenu
     else {
       this.reference = undefined;
     }
-
-    // for (let i = 0; i < inst.actions.length; i++) {
-    //   const action = inst.actions[i];
-    //   if (action.type) {
-    //     if (action.type == "checkbox") {
-    //       if (element.hasAttribute("checked")) {
-
-    //       }
-    //     }
-    //   }
-    // }
-
     // if (this.displayAt == "cursor") // Enable when other types are supported >_>
     {
       this.menu.style.opacity = 1;
