@@ -1,8 +1,12 @@
 {
   "name": "ionlib",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "",
   "main": "ion.js",
   "author": "Lucasion",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+    "url": "https://github.com/LucasionGS/IonLibJs",
+    "type": "github"
+  }
 }
