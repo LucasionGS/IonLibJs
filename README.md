@@ -3,9 +3,10 @@ IonLib is a collection of code that I use in my own software or websites to make
 
 **Key features**
 - Custom Context Menus
+- Custom in-app Popup
 
 Yes that was a short list, but this is in constant development and more features will be added.  
-I might add my [Notification library](https://github.com/LucasionGS/notif) into this.
+I might add my [Popup library](https://github.com/LucasionGS/notif) into this.
 
 # ContextMenu
 
@@ -76,3 +77,66 @@ Each instance of a `ContextMenu` have a couple of variables and functions to use
 You can add more buttons to this array, but keep in mind that the buttons display in the order they are in inside the `actions` array.  
 
 `reference`: This updates to the most recent object that was clicked to trigger a `ContextMenu`. It will also update when the *`instance`*.`show(element)` function is called. If no `element` parameter is parsed, `reference` will be `undefined`.
+
+
+# Popup
+
+## Initialize for use
+You can use one of the following, they will do the same thing.
+```js
+Popup.Initialize(options);
+Popup.addStyle(options);
+```
+
+``options`` is a JSON object and can have one or more of these following values.
+```js
+{
+  "theme":"dark", // Changes the theme of the Popup. [Default: light]
+  "top":"[number]", // [number] is any pixel count you want the Popup to be from the top when it is fully extended out. [Default: 15]
+  "transition": "ease|linear|easein|easeout|easeinout", // Change how the transition looks. Any CSS transition animation works here. [Default: easeout]
+  "transitionTime":"[time in milliseconds]" // The time in milliseconds you want for the Popup before it is fully extended. [Default: 300]
+}
+```
+
+Using this function will create a ``PopupStylingObject`` as a ``<style>`` tag in your ``html`` tag
+
+## Create a new Popup
+Create a new Popup by with:
+```js
+new Popup(title, [Optional: description|object, dieAfter]);
+```
+``description`` is smaller text below the title text. You can add text or HTML code into this field as a string,
+or you can insert an array of both strings and HTML nodes. The order they appear in inside the array, is the order they will appear in the Popup.
+
+
+``dieAfter`` is an amount of time in milliseconds for how long the Popup should stay on screen, and will close after the time is up.
+If this is not defined or set to ``0``, it will have a ``Done`` button to close the Popup.
+
+## Close a Popup
+You can close a Popup using one of the following functions.
+
+If you have assigned it to a variable:
+```js
+var popup = new Popup("Test Title", "Test Description");
+
+Popup.close();
+```
+
+If you want to close the newest Popup, use the class static function:
+```js
+Popup.closeNewest();
+```
+
+If you want to close a specific Popup by its ID, use the class static function:
+```js
+Popup.closeById(id);
+```
+
+If you want to close a specific Popup by its object reference, use the class static function:
+```js
+var popup = new Popup("Test Title", "Test Description");
+
+Popup.closeByObject(popup.object);
+// Or
+Popup.closeByObject(document.querySelector("#MyPopup"));
+```
