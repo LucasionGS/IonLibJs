@@ -436,7 +436,7 @@ class Popup {
     /**
      * Distance from the top of the screen.
      * Can be CSS style string or an integer for pixels.
-     * @type { number | string }
+     * @type { number | string | "stretchTop" }
      */
     "top": "",
     /**
@@ -461,6 +461,7 @@ class Popup {
       textColor: "black",
       backgroundColor: "white",
       transition: "ease-out",
+      borderRadius: "10px",
     };
     this.deltaMoveTime = 300;
     // Filter options
@@ -475,7 +476,13 @@ class Popup {
 
       // Height the notification box goes down
       if (options.top) {
-        if (options.top.match(/(\d+)%/g)) {
+        if (options.top == "fullTop") {
+          dVars.top = "0px";
+          dVars.minWidth = "100%";
+          dVars.maxWidth = "100%";
+          dVars.borderRadius = "0 0 10px 10px";
+        }
+        else if (options.top.match(/(\d+)%/g)) {
           dVars.top = options.top.match(/(\d+)%/g)[0];
         }
         else if (options.top.match(/(\d+)/g)) {
@@ -518,7 +525,7 @@ class Popup {
         min-height: ${dVars.minHeight};
         margin: auto;
         background: ${dVars.backgroundColor};
-        border-radius: 10px;
+        border-radius: ${dVars.borderRadius};
         box-shadow: 3px 3px 5px black;
         transition: all ${this.deltaMoveTime/1000}s ${dVars.transition};
 
