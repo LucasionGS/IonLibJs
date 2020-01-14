@@ -435,15 +435,26 @@ class Popup {
     "theme": "light",
     /**
      * Distance from the top of the screen.
-     * Can be CSS style string or an integer for pixels.
-     * @type { number | string | "stretchTop" }
+     * Can be CSS style string or an integer for pixels.  
+     * You can use an alternate top style by setting this to `"fullTop"`
+     * @type { number | "fullTop" }
      */
     "top": "",
+    /**
+     * Transition animation.
+     * @type {"ease-in-out" | "ease-out" | "ease-in"}
+     */
+    "transition": "ease-out",
     /**
      * Milliseconds for the popups to transition. (Appear and disappear)
      * @type { number }
      */
-    "transitionTime": 300
+    "transitionTime": 300,
+    /**
+     * A number between 0 and 1 to determined it's transparency/opacity.
+     * @type { number }
+     */
+    "opacity": 1,
   };
 
   /**
@@ -454,7 +465,7 @@ class Popup {
   static addStyle(options = {}) {
     // Default style settings
     const dVars = {
-      top:"5%",
+      top: "5%",
       minWidth: "512px",
       maxWidth: "768px",
       minHeight: "128px",
@@ -462,6 +473,7 @@ class Popup {
       backgroundColor: "white",
       transition: "ease-out",
       borderRadius: "10px",
+      opacity: "1"
     };
     this.deltaMoveTime = 300;
     // Filter options
@@ -509,6 +521,12 @@ class Popup {
           this.deltaMoveTime = options.transitionTime;
         }
       }
+
+      if(options.opacity) {
+        if (typeof options.opacity == "number") {
+          dVars.opacity = options.opacity;
+        }
+      }
     }
 
     // Create style object
@@ -528,7 +546,7 @@ class Popup {
         border-radius: ${dVars.borderRadius};
         box-shadow: 3px 3px 5px black;
         transition: all ${this.deltaMoveTime/1000}s ${dVars.transition};
-
+        opacity: ${dVars.opacity}
       }
       div._notification h1, div._notification p{
         color: ${dVars.textColor};
