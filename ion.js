@@ -740,31 +740,31 @@ class Parse{
       const l = argumentString[i];
       if (opts.allowQuotes && l == "\"" && arg == "") {
         inQuote = true;
-        console.log("Start of arg by quote");
+        // console.log("Start of arg by quote");
         continue;
       }
       else if (opts.allowQuotes && l == "\"" && arg != "") {
         inQuote = false;
         args.push(arg);
         arg = "";
-        console.log("End of arg by quote");
+        // console.log("End of arg by quote");
         
         continue;
       }
       else if (opts.allowQuotes && !inQuote && l == opts.separator && arg != "") {
         args.push(arg);
         arg = "";
-        console.log("End of arg by space");
+        // console.log("End of arg by space");
         
         continue;
       }
       else if (opts.allowQuotes && !inQuote && l == opts.separator && arg == "") {
-        console.log("Skip space");
+        // console.log("Skip space");
         continue;
       }
       else {
         arg += l;
-        console.log(arg+" <= "+l);
+        // console.log(arg+" <= "+l);
       }
     }
 
