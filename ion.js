@@ -711,6 +711,87 @@ class Popup {
   }
 }
 
+class Parse{
+  /**
+   * Parses a string into an array of arguments. Separates by space and quotes.
+   * @param {string} argumentString String to parse into arguments.
+   * @param {Parse.ArgumentsOptParameters} opts Options for parsing.
+   */
+  static arguments(argumentString, opts = {}) {
+    // Fixing missing arguments.
+    for (const key in Parse.ArgumentsOptParameters) {
+      if (Parse.ArgumentsOptParameters.hasOwnProperty(key)) {
+        const value = Parse.ArgumentsOptParameters[key];
+        if (!opts.hasOwnProperty(key)) {
+          opts[key] = value;
+        }
+      }
+    }
+
+    // Actual parsing
+    if (opts.autoTrim) {
+      argumentString = argumentString.trim();
+    }
+
+    var args = [];
+    var arg = "";
+    var inQuote = false;
+    for (let i = 0; i < argumentString.length; i++) {
+      const l = argumentString[i];
+      if (opts.allowQuotes && l == "\"" && arg == "") {
+        inQuote = true;
+        console.log("Start of arg by quote");
+        continue;
+      }
+      else if (opts.allowQuotes && l == "\"" && arg != "") {
+        inQuote = false;
+        args.push(arg);
+        arg = "";
+        console.log("End of arg by quote");
+        
+        continue;
+      }
+      else if (opts.allowQuotes && !inQuote && l == opts.separator && arg != "") {
+        args.push(arg);
+        arg = "";
+        console.log("End of arg by space");
+        
+        continue;
+      }
+      else if (opts.allowQuotes && !inQuote && l == opts.separator && arg == "") {
+        console.log("Skip space");
+        continue;
+      }
+      else {
+        arg += l;
+        console.log(arg+" <= "+l);
+      }
+    }
+
+    return args;
+  }
+
+  static ArgumentsOptParameters = {
+    /**
+     * Allowing quotes to be used to capture spaces inside of arguments.  
+     * `Default: true`
+     */
+    allowQuotes: true,
+    /**
+     * Separator to separate each argument by.  
+     * `Default: " "`
+     */
+    separator: " ",
+    /**
+     * Automatically trim the argument string down for whitespaces in the start and end.  
+     * `Default: true`
+     */
+    autoTrim: true,
+  };
+}
+
+//#region Unfinished
+
 /**
  * WORK IN PROGRESS  
  * Extra JSON functions to modify and use JSON objects.
@@ -808,6 +889,8 @@ class Web
     return result;
   }
 }
+
+//#endregion
 
 // Exports
 try {
