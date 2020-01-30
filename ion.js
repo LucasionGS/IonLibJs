@@ -13,8 +13,9 @@ class ContextMenu
       "name": "",
 
       /**
-       * The click event that will happen once the user clicks on the action.
-       * @type {(ev: MouseEvent, ref: HTMLElement, btnClicked: HTMLDivElement) => void}
+       * The click event that will happen once the user clicks on the action.  
+       * If ``type`` is set to ``menu``, this should be set to an instance of a ContextMenu.
+       * @type {(ev: MouseEvent, ref: HTMLElement, btnClicked: HTMLDivElement) => void | ContextMenu}
        */
       "click": function(ev, ref, btnClicked) {},
 
@@ -25,8 +26,9 @@ class ContextMenu
       "runOnThis": function(actionBtn) {},
 
       /**
-       * The type of action button this is.
-       * @type {"click" | "checkbox"}
+       * The type of action button this is.  
+       * If set to ``menu``, then the ``click`` key should be set to an instance of a ContextMenu or an array of objects with relative ContextMenu data.
+       * @type {"click" | "checkbox" | "menu"}
        */
       "type": "click",
       
@@ -186,6 +188,26 @@ class ContextMenu
         div.appendChild(cBox);
 
         div.title = "\""+action.name+"\" is "+div.hasAttribute("checked")+".";
+      }
+      else if (action.type && action.type == "menu") {
+        const menuIndicator = document.createElement("div");
+        menuIndicator.className = "menu_entry";
+  
+        div.appendChild(menuIndicator);
+        if (action.click instanceof ContextMenu) {
+          var _cm = action.click;
+          
+          action.click = function(previous_ev, previous_ref) {
+            _cm.show(previous_ref);
+          }
+        }
+        else if (typeof action.click == "object") {
+          var _cmData = action.click;
+          action.click = function(previous_ev, previous_ref) {
+            new ContextMenu(_cmData).show(previous_ref);
+          }
+          console.log(action.click);
+        }
       }
 
       if (typeof action.click == "function") {
