@@ -56,7 +56,6 @@ class ContextMenu
     this.menu = menu;
     menu.i = this;
 
-
     if (!ContextMenu.initialized) {
       window.addEventListener("keydown", function(e) {
         if (e.key == "Escape") {
@@ -733,7 +732,7 @@ class Popup {
   }
 }
 
-class Parse{
+class Parse {
   /**
    * Parses a string into an array of arguments. Separates by space and quotes.
    * @param {string} argumentString String to parse into arguments.
@@ -812,13 +811,167 @@ class Parse{
   };
 }
 
+class HTMLObjects {
+  static swapPlacement(element1, element2) {
+    var elm1Sib = element1.nextSibling;
+    element1.parentNode.insertBefore(element1, element2);
+    element2.parentNode.insertBefore(element2, elm1Sib);
+  }
+}
+
+class Web {
+  /**
+   * Get a parameter's value from a GET request.
+   * @param {string} param The parameter's name to get.
+   */
+  static getGETParameter(param) {
+    var result = null,
+        tmp = [];
+    location.search
+    .substr(1)
+    .split("&")
+    .forEach(function (item) {
+      tmp = item.split("=");
+      if (tmp[0] === param) {
+        result = decodeURIComponent(tmp[1]);
+      }
+    });
+    return result;
+  }
+}
+
 //#region Unfinished
+
+class Select {
+  static SelectFormat = [
+    {
+      /**
+       * The displayed text on the select option.  
+       * If ``text`` is not set, it will be the same as ``value.toString()``.
+       */
+      "text": false,
+      /**
+       * The value that will be set when clicked on.  
+       * ``REQUIRED``
+       * @type {any}
+       */
+      "value": "",
+      /**
+       * An event that will be called when this option has been selected.
+       * @type {(info: {event: MouseEvent, index: Number, text: string, value: any}) => void}
+       */
+      "click": false
+    }
+  ];
+
+  static OptionsFormat = {
+    /**
+     * Defines if this object is multiple choice or not. ``false`` keeps it a single select.
+     * @type {boolean}
+     */
+    "multi": false,
+    /**
+     * CSS width value.
+     */
+    "width": "100%"
+  };
+
+  /**
+   * 
+   * @param {Select.SelectFormat} selectableOptions Array of objects with settings for each selectable option.
+   * @param {Select.OptionsFormat} opts Options for this object.
+   */
+  constructor(selectableOptions, opts = {}) {
+    // If styling hasnt been set...
+    if (!document.querySelector("style#ION_SELECTABLESTYLING")) {
+      const style = document.createElement("style");
+      style.id = "ION_SELECTABLESTYLING";
+      style.innerHTML =
+`div.ion_select{
+  border-style: solid;
+  border-width: 1px;
+}
+div.ion_selectOption{
+  border-style: solid;
+  border-width: 1px;
+}
+`;
+      document.body.appendChild(style);
+    }
+
+    const div = document.createElement("div");
+    div.i = this;
+    this.div = div;
+    this.options = selectableOptions;
+    this.value = undefined;
+    div.classList.add([
+      "ion_select"
+    ])
+
+    // Width
+    if (typeof opts.width == "string") {
+      div.style.width = opts.width;
+    }
+    else {
+      div.style.width = Select.OptionsFormat.width;
+    }
+
+    // Type
+    if (typeof opts.multi == "boolean") {
+      this.multi = opts.multi;
+    }
+    else {
+      this.multi = Select.OptionsFormat.multi;
+    }
+
+    this.build();
+  }
+
+  /**
+   * Add an option to this object.
+   * @param {Select.SelectFormat[0]} option 
+   */
+  addOption(option) {
+    this.options.push(option);
+  }
+
+  /**
+   * Build or rebuild the object using the current ``Select.options``
+   */
+  build() {
+    this.div.innerHTML = "";
+    const opts = this.options;
+    for (let i = 0; i < opts.length; i++) {
+      const opt = opts[i];
+      if (typeof opt.value == "undefined") {
+        console.error("Could not create option at index "+i+" as it is missing a value.", opt);
+        continue;
+      }
+      if (opt.text == false) {
+        opt.text = opt.value;
+      }
+
+      const obj = document.createElement("div");
+
+      obj.style.height = "32px";
+      obj.style.width = "95%";
+      obj.style.marginLeft = "2.5%";
+
+      obj.innerText = opt.text;
+      obj.classList.add([
+        "ion_selectOption"
+      ])
+
+      this.div.appendChild(obj);
+    }
+  }
+}
 
 /**
  * WORK IN PROGRESS  
  * Extra JSON functions to modify and use JSON objects.
  */
-class EJSON{
+class EJSON {
   /**
    * Sort a JSON Object alphabetically.
    * @param {[{}]} json The JSON Object to sort.
@@ -835,21 +988,11 @@ class EJSON{
   }
 }
 
-class HTMLObjects
-{
-  static swapPlacement(element1, element2) {
-    var elm1Sib = element1.nextSibling;
-    element1.parentNode.insertBefore(element1, element2);
-    element2.parentNode.insertBefore(element2, elm1Sib);
-  }
-}
-
 /**
  * WORK IN PROGRESS  
  * Item List
  */
-class ItemList
-{
+class ItemList {
   /**
    * 
    * @param {ItemList.ListFormat} items 
@@ -867,8 +1010,7 @@ class ItemList
   ];
 }
 
-class Path
-{
+class Path {
   /**
    * Returns the basename of a path.
    * @param {string} path Path to a file/folder.
@@ -890,34 +1032,14 @@ class Path
   }
 }
 
-class Web
-{
-  /**
-   * Get a parameter's value from a GET request.
-   * @param {string} param The parameter's name to get.
-   */
-  static getGETParameter(param) {
-    var result = null,
-        tmp = [];
-    location.search
-    .substr(1)
-    .split("&")
-    .forEach(function (item) {
-      tmp = item.split("=");
-      if (tmp[0] === param) {
-        result = decodeURIComponent(tmp[1]);
-      }
-    });
-    return result;
-  }
-}
-
 //#endregion
 
 // Exports
 try {
   exports.ContextMenu = ContextMenu;
   exports.Popup = Popup;
+  exports.Parse = Parse;
+  exports.Select = Select;
   exports.EJSON = EJSON;
   exports.HTMLObjects = HTMLObjects;
   exports.Path = Path;
