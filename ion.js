@@ -819,6 +819,298 @@ class HTMLObjects {
   }
 }
 
+class TextSuggest {
+  /**
+   * @param {HTMLInputElement} inputElement 
+   * @param {string[]} suggestions 
+   */
+  constructor(inputElement, suggestions = []) {
+    this.inputElement = inputElement;
+    /**
+     * @type {string[]}
+     */
+    this.suggestions = suggestions;
+    this.suggestionBox = document.createElement("div");
+
+    /**
+     * @param {boolean} toggle
+     */
+    this.visible = function(toggle = null) {
+      if (toggle != null && typeof toggle == "boolean") {
+        if (toggle == true) {
+          this.suggestionBox.style.display == "block";
+        }
+        else {
+          this.suggestionBox.style.display == "none";
+        }
+        
+        return toggle;
+      }
+
+      if (this.suggestionBox.style.display == "none") {
+        return false;
+      }
+      else {
+        return true;
+      }
+    }
+
+    let obj = this;
+
+    var iEBox = inputElement.getBoundingClientRect();
+    this.suggestionBox.style.position = "absolute";
+    this.suggestionBox.style.left = iEBox.left+"px";
+    this.suggestionBox.style.top = iEBox.bottom+"px";
+    this.suggestionBox.style.width = iEBox.right - iEBox.left+"px";
+    // this.suggestionBox.style.minHeight = iEBox.bottom - iEBox.top+"px";
+    this.suggestionBox.style.backgroundColor = "#1b1b1b";
+    this.suggestionBox.style.color = "white";
+    this.suggestionBox.className = "suggestionBox";
+    this.suggestionBox.style.fontSize = this.inputElement.style.fontSize;
+
+    document.body.appendChild((function() {
+      let s = document.createElement("style");
+      s.innerHTML = `
+        div.suggestionBox div[selected] {
+          background-color: #6b6b6b;
+        }
+      `;
+      return s;
+    })());
+    document.body.appendChild(this.suggestionBox);
+
+
+    inputElement.addEventListener("keydown", function(e) {
+      let key = e.key;
+      if (obj.visible()) {
+        console.log();
+        
+        if (key == "ArrowUp") {
+          e.preventDefault();
+          /**
+           * @type {HTMLDivElement}
+           */
+          let childElm = obj.suggestionBox.querySelector("[selected]");
+          if (childElm == null) {
+            childElm = obj.suggestionBox.lastChild;
+            if (!childElm) {
+              return;
+            }
+            childElm.toggleAttribute("selected", true);
+            return;
+          }
+          childElm.toggleAttribute("selected", false);
+          if (childElm.previousSibling) {
+            childElm.previousSibling.toggleAttribute("selected", true);
+          }
+          else {
+            obj.suggestionBox.lastElementChild.toggleAttribute("selected", true);
+          }
+        }
+        if (key == "ArrowDown") {
+          e.preventDefault();
+          /**
+           * @type {HTMLDivElement}
+           */
+          let childElm = obj.suggestionBox.querySelector("[selected]");
+          if (childElm == null) {
+            childElm = obj.suggestionBox.firstChild;
+            if (!childElm) {
+              return;
+            }
+            childElm.toggleAttribute("selected", true);
+            return;
+          }
+          childElm.toggleAttribute("selected", false);
+          if (childElm.nextSibling) {
+            childElm.nextSibling.toggleAttribute("selected", true);
+          }
+          else {
+            obj.suggestionBox.firstElementChild.toggleAttribute("selected", true);
+          }
+        }
+        if (key == "Enter" || key == "Tab") {
+          
+          /**
+           * @type {HTMLDivElement}
+           */
+          let childElm;
+          childElm = obj.suggestionBox.querySelector("[selected]");
+          if (childElm == null) {
+            childElm = obj.suggestionBox.firstElementChild;
+          }
+          
+          if (!childElm) return;
+
+          let w = obj.getCurrentWords(childElm.innerText.split(" ").length);
+
+          if (w == null || w.word == "") return;
+
+          e.preventDefault();
+          obj.replaceAt("", w.start, w.end);
+          let newWord = childElm.innerText;
+          obj.insertAt(newWord, w.start, newWord.length);
+        }
+      }
+
+      if (
+        key != "ArrowUp"
+        && key != "ArrowDown"
+        && key != "ArrowLeft"
+        && key != "ArrowRight"
+        && key != "Escape"
+        ) {
+        setTimeout(() => {
+          obj.suggest();
+        }, 0);
+      }
+    });
+  }
+
+  suggest(maxWordCount = this.inputElement.value.split(" ").length) {
+    let wordCount = maxWordCount;
+    this.suggestionBox.innerHTML = "";
+    let count = 0;
+    let word = this.getCurrentWords(wordCount);
+    let suggested = [];
+    
+    for (let i = 0; i < this.suggestions.length; i++) {
+      wordCount = maxWordCount;
+      const sgtn = this.suggestions[i];
+      do {
+        word = this.getCurrentWords(wordCount--);
+        
+        if (word == null) {
+          continue;
+        }
+        if (
+          sgtn.split(" ").length == word.word.split(" ").length
+          && sgtn.toLowerCase().trim().startsWith(word.word.toLowerCase().trim())
+          && sgtn != word.word
+          && !suggested.includes(sgtn)) {
+          const div = document.createElement("div");
+          div.innerText = sgtn;
+          let cur = this;
+          div.onclick = function() {
+            cur.replaceAt(sgtn, word.start, word.end);
+            cur.suggestionBox.innerHTML= "";
+            cur.visible(false);
+          };
+    
+          this.suggestionBox.appendChild(div);
+          suggested.push(sgtn);
+          // Something to do with suggestions?
+          count++;
+        }
+      }
+      while(wordCount > 0);
+    }
+    if (count > 0) {
+      this.visible(true);
+      this.suggestionBox.firstElementChild.toggleAttribute("selected", true);
+    }
+    else {
+      // if (word.start > 0) {
+      //   this.suggest(wordCount + 1);
+      //   return;
+      // }
+      this.visible(false);
+    }
+  }
+
+  addSuggestionsSplitBySpaces() {
+    let newList = [];
+    for (let i = 0; i < this.suggestions.length; i++) {
+      const sug = this.suggestions[i];
+      let words = sug.split(" ");
+      for (let i2 = 0; i2 < words.length; i2++) {
+        const word = words[i2];
+        if (!newList.includes(word)) newList.push(word);
+      }
+      if (!newList.includes(sug)) newList.push(sug);
+    }
+
+    this.suggestions = newList;
+  }
+
+  /**
+   * @param {string} text 
+   * @param {number} pos 
+   * @param {number} startPlus 
+   * @param {number} endPlus 
+   */
+  insertAt(text, pos, startPlus = 0, endPlus = startPlus) {
+    let curStart = this.inputElement.selectionStart;
+    let curEnd = this.inputElement.selectionEnd;
+    let str = this.inputElement.value;
+    let part1 = str.substring(0, pos);
+    let part2 = str.substring(pos);
+    this.inputElement.value = part1 + text + part2;
+    setTimeout(() => {
+      this.inputElement.setSelectionRange(curStart + startPlus, curEnd + endPlus)
+    }, 0);
+  }
+
+  /**
+   * @param {string} txt
+   * @param {number} start
+   * @param {number} end
+   */
+  replaceAt(txt, start, end = start) {
+    
+    this.inputElement.focus();
+    let text = this.inputElement.value;
+    // let oldStart = this.inputElement.selectionStart;
+    // let oldEnd = this.inputElement.selectionEnd;
+    // while(oldStart > start) {
+    //   oldStart--;
+    //   oldEnd--;
+    // }
+    let chars = text.split("");
+    chars.splice(start, end - start);
+    
+    let newStr = "";
+    for (let i = 0; i < chars.length; i++) {
+      newStr += chars[i];
+    }
+
+    let part1 = newStr.substring(0, start);
+    let part2 = newStr.substring(start);
+    
+    newStr = part1 + txt + part2;
+
+    this.inputElement.value = newStr;
+
+    this.inputElement.setSelectionRange((part1 + txt).length, (part1 + txt).length);
+  }
+
+  getCurrentWords(wordCount = 1) {
+    let str = this.inputElement.value;
+    let start = 0, end = start = this.inputElement.selectionEnd;
+    let wordsFound = 0;
+    while(start > -1) {
+      if (str[--start] == " ") {
+        wordsFound++;
+      }
+
+      if (str[start] == " " && wordsFound >= wordCount) {
+        break;
+      }
+    };
+    start++;
+    
+    if (start >= end ) {
+      return null;
+    }
+    
+    return {
+      "word": str.substring(start, end),
+      "start": start,
+      "end": end
+    };
+  }
+}
+
 class Web {
   /**
    * Get a parameter's value from a GET request.
@@ -1040,6 +1332,7 @@ try {
   exports.Popup = Popup;
   exports.Parse = Parse;
   exports.Select = Select;
+  exports.TextSuggest = TextSuggest;
   exports.EJSON = EJSON;
   exports.HTMLObjects = HTMLObjects;
   exports.Path = Path;
